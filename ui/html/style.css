@@ -1,0 +1,510 @@
+/* Рабочая станция проектировщика: доки, плотные таблицы, плоские поверхности,
+   монохром, цвет только смысловой. Шрифты системные, внешних ресурсов нет. */
+
+:root {
+    --bg: #eceef0;
+    --surface: #ffffff;
+    --surface-dim: #f6f7f8;
+    --line: #d3d7dc;
+    --line-soft: #e6e9ec;
+    --text: #1b1d20;
+    --text-dim: #5b6169;
+    --accent: #0b63c5;
+    --accent-soft: #e6eefa;
+    --error: #c0392b;
+    --warning: #b7791f;
+    --success: #1e7a45;
+
+    --dn-1: #9ecae1;
+    --dn-2: #4292c6;
+    --dn-3: #2171b5;
+    --dn-4: #08519c;
+
+    --row: 26px;
+    --fast: 120ms cubic-bezier(0.2, 0, 0, 1);
+    --slow: 160ms cubic-bezier(0.2, 0, 0, 1);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; margin: 0; overflow: hidden; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font: 13px/1.4 var(--font);
+}
+
+/* Перетаскивание схемы не должно выделять текст всего интерфейса.
+   Выделение оставлено там, где инженеру нужно скопировать значение: в таблицах
+   и в карточке объекта. */
+.toolbar, .vp-title, .chipbar, .vp-scale, .pane-head, .group, .canvas,
+.hsplit, .vsplit, .field label, .tool, .chip {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+td, .props dd, .props dt, .note {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+.canvas svg, .canvas svg * { -webkit-user-drag: none; }
+
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.shell { display: flex; height: 100%; }
+.work { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+
+/* --- панель инструментов -------------------------------------------------- */
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    min-height: 32px;
+    padding: 3px 6px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    flex: none;
+    min-width: 0;
+}
+
+.toolbar .grow { flex: 1; }
+.toolbar .sep { width: 1px; height: 18px; background: var(--line); margin: 0 4px; }
+
+.tool {
+    height: 24px;
+    padding: 0 9px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background var(--fast), border-color var(--fast), color var(--fast);
+}
+
+.tool:hover { background: var(--surface-dim); border-color: var(--line); }
+.tool:active { transform: translateY(1px); }
+.tool[aria-pressed="true"] { background: var(--accent-soft); border-color: #bcd4f0; color: var(--accent); }
+.tool[disabled] { opacity: 0.4; cursor: default; }
+.tool[disabled]:hover { background: transparent; border-color: transparent; }
+.tool.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tool.primary:hover { background: #0a58b0; }
+.tool.primary[disabled] { background: var(--accent); }
+
+.toolbar select {
+    height: 24px;
+    max-width: 210px;
+    padding: 0 4px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+}
+
+.status { font-family: var(--mono); font-size: 11px; color: var(--text-dim); margin-right: 6px; }
+
+.progress { height: 2px; background: var(--line-soft); flex: none; }
+.progress span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--slow);
+}
+
+/* --- вьюпорты ------------------------------------------------------------- */
+
+.viewports { flex: 1; display: flex; min-height: 0; background: var(--bg); gap: 1px; }
+
+.viewport {
+    flex: 1;
+    position: relative;
+    min-width: 0;
+    background: var(--surface);
+    overflow: hidden;
+}
+
+.vp-title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0));
+    pointer-events: none;
+    z-index: 2;
+}
+
+.canvas { position: absolute; inset: 0; cursor: grab; touch-action: none; }
+.canvas.dragging { cursor: grabbing; }
+.canvas.boxing { cursor: crosshair; }
+
+.rubber {
+    position: absolute;
+    border: 1px solid var(--accent);
+    background: rgba(11, 99, 197, 0.08);
+    pointer-events: none;
+    z-index: 3;
+}
+.canvas svg { display: block; width: 100%; height: 100%; }
+
+.vp-tools { position: absolute; top: 26px; left: 8px; z-index: 2; }
+
+.chipbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-width: 320px;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 20px;
+    padding: 0 7px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+    user-select: none;
+    transition: background var(--fast), border-color var(--fast), opacity var(--fast);
+}
+
+.chip:hover { border-color: #b9bec4; }
+.chip[aria-pressed="false"] { opacity: 0.45; }
+.chip .dot { width: 10px; height: 3px; border-radius: 1px; }
+.chip .dot.box { height: 9px; width: 9px; border: 1px solid rgba(0, 0, 0, 0.18); }
+
+.vp-scale {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    z-index: 2;
+    padding: 1px 6px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.vp-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    pointer-events: none;
+}
+
+/* --- разделители ---------------------------------------------------------- */
+
+.hsplit { height: 5px; background: var(--bg); cursor: row-resize; flex: none; position: relative; }
+/* position: relative обязателен: без него подсветка ::after позиционируется
+   относительно окна и накрывает весь интерфейс, перехватывая мышь. */
+.vsplit { width: 5px; background: var(--bg); cursor: col-resize; flex: none; position: relative; }
+.hsplit::after, .vsplit::after {
+    content: "";
+    position: absolute;
+    inset: 2px 0;
+    background: var(--line);
+    opacity: 0;
+    transition: opacity var(--fast);
+}
+.hsplit:hover::after, .vsplit:hover::after,
+.hsplit.active::after, .vsplit.active::after { opacity: 1; }
+.vsplit::after { inset: 0 2px; }
+
+/* --- доки ----------------------------------------------------------------- */
+
+.dock-bottom { height: 250px; display: flex; flex: none; min-height: 0; }
+.dock-side {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    min-height: 0;
+    overflow: hidden;
+}
+/* На узком окне доки ужимаются, чтобы схеме осталось место; тянуть можно вручную. */
+.dock-left { width: clamp(240px, 22vw, 360px); border-right: 1px solid var(--line); }
+.dock-right { width: clamp(240px, 20vw, 320px); border-left: 1px solid var(--line); }
+
+/* position: relative обязателен: иначе подсветка ::after накроет весь экран. */
+.side-split {
+    width: 5px;
+    flex: none;
+    background: var(--bg);
+    cursor: col-resize;
+    position: relative;
+}
+.side-split::after {
+    content: "";
+    position: absolute;
+    inset: 0 2px;
+    background: var(--line);
+    opacity: 0;
+    transition: opacity var(--fast);
+}
+.side-split:hover::after, .side-split.active::after { opacity: 1; }
+
+.dock-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--surface);
+}
+
+.dock-side .dock-pane { flex: none; border-bottom: 1px solid var(--line); max-height: 40%; }
+/* Карточка объекта постоянной высоты: иначе при каждой смене выделения панель данных
+   под ней прыгает вверх-вниз прямо под курсором. */
+.dock-side .dock-pane[data-pane="inspector"] { flex: 0 0 clamp(150px, 34%, 340px); max-height: none; }
+.dock-side .dock-pane[data-pane="inspector"].folded { flex: none; }
+.dock-side .dock-pane.grow { flex: 1 1 0; max-height: none; }
+.dock-side .dock-pane:last-child { border-bottom: none; }
+.dock-side .dock-pane.folded { flex: none; max-height: none; }
+.dock-side .dock-pane.folded .pane-body { display: none; }
+.dock-bottom .dock-pane { border-top: 1px solid var(--line); }
+.dock-bottom .dock-pane.folded .pane-body { display: none; }
+
+.pane-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    padding: 0 8px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: var(--surface-dim);
+    border-bottom: 1px solid var(--line);
+    flex: none;
+}
+
+.pane-head .adv {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.pane-body { flex: 1; overflow: auto; min-height: 0; }
+
+.twisty {
+    width: 0;
+    height: 0;
+    flex: none;
+    border-left: 4px solid var(--text-dim);
+    border-top: 3.5px solid transparent;
+    border-bottom: 3.5px solid transparent;
+    transform: rotate(90deg);
+    transition: transform var(--fast);
+}
+
+.folded > .twisty, .folded .pane-head .twisty, .pane-head.folded .twisty { transform: rotate(0deg); }
+
+.group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 22px;
+    padding: 0 8px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: var(--surface);
+    border-bottom: 1px solid var(--line-soft);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.group { white-space: nowrap; overflow: hidden; }
+.group .group-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.group .count { margin-left: auto; flex: none; font-family: var(--mono); font-weight: 400; }
+.group .count.pickable {
+    padding: 0 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background var(--fast), color var(--fast);
+}
+.group .count.pickable:hover { background: var(--accent-soft); color: var(--accent); }
+.group:hover { background: var(--surface-dim); }
+.group.folded .twisty { transform: rotate(0deg); }
+.section-body { display: block; }
+.section-body.folded { display: none; }
+
+/* --- таблицы -------------------------------------------------------------- */
+
+table { border-collapse: collapse; table-layout: fixed; }
+.table-wrap { overflow-x: auto; }
+
+th {
+    position: relative;
+    height: 22px;
+    padding: 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+td {
+    height: var(--row);
+    padding: 3px 8px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: middle;
+}
+
+td.num, th.num {
+    text-align: right;
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+td.dim { color: var(--text-dim); }
+td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+td.wrap { white-space: normal; }
+
+.col-grip {
+    position: absolute;
+    top: 0;
+    right: -3px;
+    width: 7px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 2;
+}
+.col-grip::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 3px;
+    width: 1px;
+    background: var(--line);
+    opacity: 0;
+    transition: opacity var(--fast);
+}
+.col-grip:hover::after, .col-grip.active::after { opacity: 1; background: var(--accent); }
+tbody tr { transition: background var(--fast); }
+tbody tr[data-pick], tbody tr[data-group] { cursor: pointer; }
+tbody tr[data-pick]:hover, tbody tr[data-group]:hover { background: var(--surface-dim); }
+.note.pickable { cursor: pointer; }
+.note.pickable:hover { background: var(--surface-dim); }
+tbody tr[aria-selected="true"] { background: var(--accent-soft); }
+tr.total td { font-weight: 600; border-top: 1px solid var(--line); }
+
+.delta-up { color: var(--error); }
+.delta-down { color: var(--success); }
+
+/* --- свойства и параметры -------------------------------------------------- */
+
+.props { display: grid; grid-template-columns: minmax(96px, 42%) minmax(0, 1fr); }
+.props dt, .props dd {
+    margin: 0;
+    padding: 3px 8px;
+    border-bottom: 1px solid var(--line-soft);
+    min-height: 24px;
+    display: flex;
+    align-items: center;
+}
+.props dt { color: var(--text-dim); }
+/* Длинное значение (адрес) переносится, а не выталкивает короткие значения за край. */
+.props dd {
+    justify-content: flex-end;
+    text-align: right;
+    font-family: var(--mono);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-width: 0;
+}
+
+.field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 8px;
+    min-height: var(--row);
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.field label { flex: 1; min-width: 0; }
+.field select, .field input[type="number"] {
+    height: 22px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 0 4px;
+}
+.field select { max-width: 168px; text-overflow: ellipsis; }
+.field input[type="number"] { width: 84px; text-align: right; font-family: var(--mono); }
+
+.note { padding: 8px; color: var(--text-dim); }
+.note.error { color: var(--error); }
+.note.warn { color: var(--warning); }
+.note.ok { color: var(--success); }
+.note.plain { color: var(--text); }
+
+.row-actions { display: flex; gap: 6px; padding: 6px 8px; flex-wrap: wrap; }
+.row-actions .tool { border-color: var(--line); }
+
+.skeleton {
+    height: 9px;
+    margin: 8px;
+    border-radius: 2px;
+    background: var(--line-soft);
+    animation: fade var(--slow) both;
+}
+
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.appear { animation: appear var(--slow) both; }
+@keyframes appear { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+/* --- карта ---------------------------------------------------------------- */
+
+.hit { cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+}

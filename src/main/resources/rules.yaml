@@ -1,0 +1,162 @@
+# Таблица 1: условные диаметры, пропускная способность, предельная длина, стоимость,
+# расчётный габарит пары труб.
+# capacity   — пропускная способность, т/ч
+# maxLength  — предельная длина непрерывного пути одного Ду, м
+# newCost    — новое строительство, руб./м
+# width      — расчётная ширина пары труб, м (для буферов и минимальных расстояний)
+# height     — расчётная высота, м (для дополнительной задачи по глубине)
+diameters:
+  - { dn: 50,   capacity: 3.5,     maxLength: 181,   newCost: 74023,  width: 0.400, height: 0.125 }
+  - { dn: 65,   capacity: 8.3,     maxLength: 245,   newCost: 78631,  width: 0.430, height: 0.140 }
+  - { dn: 80,   capacity: 13.2,    maxLength: 327,   newCost: 83530,  width: 0.470, height: 0.160 }
+  - { dn: 100,  capacity: 22.3,    maxLength: 419,   newCost: 89748,  width: 0.510, height: 0.180 }
+  - { dn: 125,  capacity: 40.2,    maxLength: 554,   newCost: 97275,  width: 0.600, height: 0.225 }
+  - { dn: 150,  capacity: 65.1,    maxLength: 696,   newCost: 105507, width: 0.650, height: 0.250 }
+  - { dn: 200,  capacity: 152.3,   maxLength: 1042,  newCost: 120275, width: 0.880, height: 0.315 }
+  - { dn: 250,  capacity: 274.9,   maxLength: 1379,  newCost: 135323, width: 1.050, height: 0.400 }
+  - { dn: 300,  capacity: 437.4,   maxLength: 1718,  newCost: 150022, width: 1.150, height: 0.450 }
+  - { dn: 400,  capacity: 943.1,   maxLength: 2477,  newCost: 190299, width: 1.370, height: 0.560 }
+  - { dn: 500,  capacity: 1663.4,  maxLength: 3245,  newCost: 224137, width: 1.670, height: 0.710 }
+  - { dn: 600,  capacity: 2627.7,  maxLength: 4037,  newCost: 264790, width: 1.850, height: 0.800 }
+  - { dn: 700,  capacity: 3735.1,  maxLength: 4775,  newCost: 324298, width: 2.050, height: 0.900 }
+  - { dn: 800,  capacity: 5296.8,  maxLength: 5644,  newCost: 325996, width: 2.250, height: 1.000 }
+  - { dn: 900,  capacity: 7165.0,  maxLength: 6518,  newCost: 327693, width: 2.450, height: 1.100 }
+  - { dn: 1000, capacity: 9391.8,  maxLength: 7419,  newCost: 418777, width: 2.650, height: 1.200 }
+  - { dn: 1200, capacity: 15012.8, maxLength: 9288,  newCost: 428074, width: 3.100, height: 1.425 }
+  - { dn: 1400, capacity: 22501.9, maxLength: 11276, newCost: 683417, width: 3.450, height: 1.600 }
+
+# Таблица 2. Правила по типам пространственных ограничений.
+# crossing: FORBIDDEN — обходим; SPECIAL — пересекаем специальным проходом одним прямым участком.
+# clearance — минимальное горизонтальное расстояние при прохождении рядом, м.
+# clearanceByDn — расстояние зависит от Ду новой сети (для ОКС).
+# minAngle — минимальный угол пересечения, градусы; 0 — не задан.
+# specialBuffer — на сколько метров специальный участок выходит за границу объекта.
+# k — коэффициент стоимости специального прохода.
+# depth — правило по глубине для дополнительной задачи:
+#   UNDER  — только под объектом, cover — минимум от поверхности до верха габарита, м
+#   EITHER — выше или ниже, gap — минимальный вертикальный просвет, м
+restrictions:
+  oks:
+    title: Объект капитального строительства
+    crossing: FORBIDDEN
+    clearanceByDn: [ { maxDn: 400, clearance: 5.0 }, { maxDn: 800, clearance: 7.0 }, { maxDn: 1400, clearance: 9.0 } ]
+  park:
+    title: Парк
+    crossing: FORBIDDEN
+    clearance: 1.0
+  social_area:
+    title: Территория социального объекта
+    crossing: FORBIDDEN
+    clearance: 1.0
+  prohibited_site:
+    title: Запрещённая территория
+    crossing: FORBIDDEN
+    clearance: 1.0
+  water:
+    title: Водный объект
+    crossing: FORBIDDEN
+    clearance: 1.0
+  railway:
+    title: Железная дорога
+    crossing: FORBIDDEN
+    clearance: 1.0
+  road:
+    title: Автомобильная дорога
+    crossing: SPECIAL
+    clearance: 1.5
+    minAngle: 45
+    specialBuffer: 3.0
+    k: 1.60
+    depth: { mode: UNDER, cover: 1.0 }
+  tram_tracks:
+    title: Трамвайные пути
+    crossing: SPECIAL
+    clearance: 1.5
+    minAngle: 45
+    specialBuffer: 3.0
+    k: 1.75
+    depth: { mode: UNDER, cover: 1.2 }
+  gas_pipeline:
+    title: Газопровод
+    crossing: SPECIAL
+    clearance: 2.0
+    minAngle: 0
+    specialBuffer: 2.0
+    k: 1.25
+    depth: { mode: EITHER, gap: 0.2 }
+    existing: { width: 0.400, height: 0.400, top: 2.8 }
+  power_cable:
+    title: Силовой кабель до 35 кВ
+    crossing: SPECIAL
+    clearance: 2.0
+    minAngle: 0
+    specialBuffer: 2.0
+    k: 1.15
+    depth: { mode: EITHER, gap: 0.5 }
+    existing: { width: 0.200, height: 0.200, top: 2.7 }
+  heat_network:
+    title: Существующая тепловая сеть (пересечение без присоединения)
+    crossing: SPECIAL
+    clearance: 1.0
+    minAngle: 0
+    specialBuffer: 2.0
+    k: 1.05
+    depth: { mode: EITHER, gap: 0.5 }
+    existing: { top: 3.0 }
+  # Ниже — типы сверх таблицы 2. Поддержка необязательна (ответ 9), но учитывается
+  # как расширение решения, если такие объекты придут во входном файле.
+  metro:
+    title: Объект метрополитена
+    crossing: FORBIDDEN
+    clearance: 5.0
+  kindergarten:
+    title: Детский сад
+    crossing: FORBIDDEN
+    clearance: 1.0
+  school:
+    title: Школа
+    crossing: FORBIDDEN
+    clearance: 1.0
+  unknown:
+    title: Неизвестный тип ограничения
+    comment: >-
+      Применяется к типам вне справочника, только если параметр unknownRestriction = FORBID.
+      По умолчанию такие объекты игнорируются с предупреждением: в обязательной части
+      проверяются лишь типы таблицы 2, а чужой тип с запретом перекрыл бы всю территорию.
+    crossing: FORBIDDEN
+    clearance: 1.0
+
+# Раздел 3.2. Шкала стоимости новой тепловой камеры по наибольшему Ду примыкающих участков.
+# Стоимость новой камеры включает присоединение к существующей сети.
+chamberCost:
+  - { maxDn: 200,  cost: 3000000 }
+  - { maxDn: 500,  cost: 5000000 }
+  - { maxDn: 1000, cost: 8000000 }
+  - { maxDn: 1400, cost: 12000000 }
+
+# Раздел 3.2 — стоимость одной врезки в существующую камеру: по 5 млн за каждый новый
+# участок, заканчивающийся в ней. Раздел 6 — штраф за неподключённую точку.
+existingChamberTieInCost: 5000000
+penalty: { fixed: 100000000, perTph: 500000 }
+
+# Раздел 2.4. Ближе chamberRadius метров от существующей камеры со свободным местом
+# присоединяемся в неё, дальше строим новую камеру прямо на трубе.
+tieIn: { chamberRadius: 10.0, maxBranches: 4 }
+
+# Раздел 2.1: угол поворота произвольный до 90° включительно, удорожания за угол нет.
+# Углы 45° и 90° остаются признаком инженерной геометрии: по ним работает стратегия
+# «инженерный вариант» и показатель «нестандартных отводов» в интерфейсе.
+# toleranceDeg — допуск на трубе (округление координат), chamberToleranceDeg — в камере,
+# где отвода нет и труба входит в стенку камеры.
+turn: { standardAngles: [45, 90], maxDeg: 90, toleranceDeg: 1.0, chamberToleranceDeg: 5.0 }
+
+# Допуск округления расстояний в большую сторону: 4,999 м считается пятью метрами.
+roundingTolerance: 0.01
+
+# Раздел 6. Показатель ранжирования S = costWeight*C/costBase + lengthWeight*L/lengthBase,
+# где C — calculated_cost, L — new_network_length.
+ranking: { costWeight: 0.7, costBase: 25000000, lengthWeight: 0.3, lengthBase: 100 }
+
+# Раздел 5. Глубина (дополнительная задача).
+# normal — обычная глубина до верха габарита, min — минимальная, maxSlope — уклон.
+depth: { normal: 3.0, min: 0.7, free: 3.0, extraCostPerMeter: 0.10, maxSlope: 0.10 }

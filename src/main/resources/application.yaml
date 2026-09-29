@@ -1,0 +1,90 @@
+spring:
+  application:
+    name: trubo-fiesta
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: ${APP_MAX_UPLOAD_SIZE:3GB}
+      max-request-size: ${APP_MAX_UPLOAD_SIZE:3GB}
+      file-size-threshold: 0B
+      location: ${APP_STORAGE_TMP_DIR:${java.io.tmpdir}/trubo-fiesta/tmp}
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:trubo_fiesta}
+    username: ${DB_USER:trubo}
+    password: ${DB_PASSWORD:trubo}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: trubo-fiesta-pool
+      maximum-pool-size: ${DB_POOL_MAX:20}
+      minimum-idle: ${DB_POOL_MIN:5}
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      initialization-fail-timeout: -1
+
+  flyway:
+    enabled: true
+    connect-retries: 60
+    connect-retries-interval: 2s
+
+  mvc:
+    async:
+      request-timeout: 30m
+
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  compression:
+    enabled: false
+  tomcat:
+    threads:
+      max: ${SERVER_THREADS_MAX:100}
+      min-spare: 20
+    max-connections: 200
+    accept-count: 100
+    connection-timeout: 60s
+    max-swallow-size: -1B
+    max-http-form-post-size: -1B
+
+app:
+  storage:
+    root-dir: ${APP_STORAGE_ROOT_DIR:${java.io.tmpdir}/trubo-fiesta/store}
+    tmp-dir: ${APP_STORAGE_TMP_DIR:${java.io.tmpdir}/trubo-fiesta/tmp}
+    max-upload-size: ${APP_MAX_UPLOAD_SIZE:3GB}
+    max-download-size: ${APP_MAX_DOWNLOAD_SIZE:500MB}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+  packages-to-scan: ru.chmod777.trubofiesta
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:INFO}
+    ru.chmod777.trubofiesta: ${LOG_LEVEL:INFO}

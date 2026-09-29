@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Трассировка тепловых сетей</title>
+    <link rel="stylesheet" href="style.css?v=14">
+</head>
+<body>
+<div class="shell">
+    <aside class="dock-side dock-left" id="dockLeft">
+        <section class="dock-pane" data-pane="inspector">
+            <div class="pane-head" data-fold="paneObject">Объект</div>
+            <div class="pane-body" id="inspector"></div>
+        </section>
+        <section class="dock-pane grow" data-pane="data">
+            <div class="pane-head" data-fold="paneData">Данные</div>
+            <div class="pane-body" id="dataBody"></div>
+        </section>
+    </aside>
+
+    <div class="side-split" id="lsplit" role="separator" aria-orientation="vertical" tabindex="0"></div>
+
+    <div class="work">
+        <div class="toolbar">
+            <select id="dataset" title="Набор данных"></select>
+            <button class="tool" id="load" title="Загрузить набор данных">Загрузить</button>
+            <span class="sep"></span>
+            <button class="tool" id="compare" aria-pressed="false">Сравнение</button>
+            <select id="variantPick" title="Вариант"></select>
+            <span class="grow"></span>
+            <span class="status" id="status"></span>
+            <button class="tool primary" id="run" disabled>Рассчитать</button>
+            <input type="file" id="file" accept=".geojson,.json,application/geo+json" hidden>
+        </div>
+        <div class="progress" id="progress" hidden><span></span></div>
+
+        <div class="viewports" id="viewports">
+            <section class="viewport" data-side="a">
+                <div class="vp-title"><span data-role="caption">Схема</span></div>
+                <div class="canvas" data-role="canvas"></div>
+                <div class="vp-tools">
+                    <div class="chipbar" data-role="layers"></div>
+                </div>
+                <div class="vp-scale" data-role="scale"></div>
+            </section>
+            <section class="viewport" data-side="b" hidden>
+                <div class="vp-title"><span data-role="caption">Сравнение</span></div>
+                <div class="canvas" data-role="canvas"></div>
+                <div class="vp-scale" data-role="scale"></div>
+            </section>
+        </div>
+
+        <div class="hsplit" id="hsplit" role="separator" aria-orientation="horizontal" tabindex="0"></div>
+
+        <div class="dock-bottom" id="dockBottom">
+            <section class="dock-pane">
+                <div class="pane-head" data-fold="paneResult">Результат</div>
+                <div class="pane-body" id="resultBody"></div>
+            </section>
+        </div>
+    </div>
+
+    <div class="side-split" id="rsplit" role="separator" aria-orientation="vertical" tabindex="0"></div>
+
+    <aside class="dock-side dock-right" id="dockRight">
+        <section class="dock-pane grow" data-pane="settings">
+            <div class="pane-head" data-fold="paneSettings">Параметры
+                <label class="adv"><input type="checkbox" id="advanced"> все</label>
+            </div>
+            <div class="pane-body" id="settings"></div>
+        </section>
+    </aside>
+</div>
+<script src="app.js?v=18"></script>
+</body>
+</html>
